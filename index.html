@@ -88,7 +88,9 @@ const COL={lawn:'#A8BE90',asphalt:'#8E8E88',gravel:'#C8C2B4',gravel2:'#D4CEC0',
   fence:'#7A6A55',gate:'#8A4A3A',slate:'#6A6A66',soil:'#9A8A6A',spruce:'#3E5A3E',
   birch:'#7A9A4A',trunk:'#6A4A3A',btrunk:'#DDDDDD',bush1:'#B5CFA0',bush2:'#C9A227',
   ggates:'#7A7A7A',shelf:'#999999',su:'#D8D8D8',car1:'#9DB8D2',car2:'#B8B0A0',
-  step:'#B4AA96',post:'#6A5A45'};
+  step:'#B4AA96',post:'#6A5A45',
+  furnWood:'#A98F6A',furnWood2:'#8A7355',furnFab:'#8FA3B8',furnFab2:'#B0A48E',
+  furnWhite:'#F0EDE6',furnDark:'#55534E',furnTV:'#3A3A3A'};
 
 /* ---- Состояние камеры и режимов ---- */
 const DEF={az:135*Math.PI/180, el:32*Math.PI/180, dist:55, target:[0,0,0]};
@@ -153,8 +155,8 @@ function polyNormal(pts){
   for(let i=0;i<pts.length;i++){
     const a=pts[i], b=pts[(i+1)%pts.length];
     nx+=(a[1]-b[1])*(a[2]+b[2]);
-    ny+=(a[2]-b[2])*(a[0]+b[0]);
-    nz+=(a[0]-b[0])*(a[1]+b[1]);
+    ny+=(a[2]-b[2])*(a[0]-b[0]);
+    nz+=(a[0]-b[0])*(a[1]-b[1]);
   }
   const L=Math.hypot(nx,ny,nz)||1e-9;
   return [nx/L,ny/L,nz/L];
@@ -262,8 +264,8 @@ function blob(cx,cy,cz,rx,ry,rz,color){
 flat(V,0,COL.lawn);
 
 /* ---- Дороги снаружи: полоса 7 м, целиком СНАРУЖИ контура, у южного угла-перекрёстка ----
-   Вдоль ребра V2→V1 (западная) и V3→V4 (восточная); начало — 9 м до угла V2/V3,
-   конец — 6 м за V1 / V4. Внутренняя кромка полосы совпадает с линией ребра. */
+   Вдоль ребра V2→V1 (западная) и V3→V4 (восточная); начало — 14 м до угла V2/V3,
+   конец — 10 м за V1 / V4. Внутренняя кромка полосы совпадает с линией ребра. */
 function roadGeom(P,Q){
   const dx=Q[0]-P[0], dy=Q[1]-P[1], L=Math.hypot(dx,dy)||1e-9;
   let nx=-dy/L, ny=dx/L;
@@ -413,6 +415,69 @@ function buildHouse(st){
   flatT(HH,[[2.6,-2.0],[5.15,-2.0],[5.15,0],[2.6,0]],0.15,COL.porch);
   rectBox(HH,2.6,-2.3,5.15,-2.0,0,0.10,COL.step); // ступень 1
   rectBox(HH,2.6,-2.6,5.15,-2.3,0,0.05,COL.step); // ступень 2
+  /* ---- Мебель (плановые координаты, видна при «крыша выкл») ---- */
+  const F={interior:true}, zF=0.15;
+  // Кухня-гостиная
+  rectBox(HH,5.0,3.35,9.2,3.95,zF,0.9,COL.furnWood2,F);   // кухонный гарнитур у перегородки
+  rectBox(HH,4.0,5.0,5.6,5.9,zF,0.75,COL.furnWood,F);     // обеденный стол 1.6×0.9
+  [[4.3,4.45],[5.0,4.45],[4.3,6.0],[5.0,6.0]].forEach(function(c){ // 4 стула 0.4×0.4
+    rectBox(HH,c[0],c[1],c[0]+0.4,c[1]+0.4,zF,0.45,COL.furnWood2,F);
+  });
+  rectBox(HH,4.3,4.45,4.7,4.53,zF,0.9,COL.furnWood2,F);   // спинки стульев
+  rectBox(HH,5.0,4.45,5.4,4.53,zF,0.9,COL.furnWood2,F);
+  rectBox(HH,4.3,6.32,4.7,6.4,zF,0.9,COL.furnWood2,F);
+  rectBox(HH,5.0,6.32,5.4,6.4,zF,0.9,COL.furnWood2,F);
+  rectBox(HH,1.2,8.6,3.4,9.5,zF,0.45,COL.furnFab,F);      // диван: основание
+  rectBox(HH,1.2,9.3,3.4,9.5,zF,0.8,COL.furnFab,F);       // диван: спинка
+  rectBox(HH,1.4,5.6,3.2,6.0,zF,0.5,COL.furnWood,F);      // ТВ-тумба
+  rectBox(HH,1.6,5.72,3.0,5.8,zF+0.5,1.0,COL.furnTV,F);   // панель ТВ
+  rectBox(HH,3.3,11.5,4.1,12.3,zF,0.4,COL.furnFab2,F);    // кресло в выступе
+  rectBox(HH,3.3,12.1,4.1,12.3,zF,0.8,COL.furnFab2,F);    // кресло: спинка
+  // Гл.спальня
+  rectBox(HH,8.6,0.3,10.2,2.3,zF,0.45,COL.furnFab2,F);    // кровать 1.6×2.0
+  rectBox(HH,8.6,0.2,10.2,0.3,zF,1.0,COL.furnWood2,F);    // изголовье
+  rectBox(HH,8.05,0.25,8.5,0.7,zF,0.55,COL.furnWood,F);   // тумбочка 1
+  rectBox(HH,10.3,0.25,10.75,0.7,zF,0.55,COL.furnWood,F); // тумбочка 2
+  rectBox(HH,10.95,1.5,11.55,3.1,zF,2.1,COL.furnWood2,F); // шкаф 1.6×0.6
+  // Спальня 2
+  rectBox(HH,14.9,6.6,16.9,8.2,zF,0.45,COL.furnFab2,F);   // кровать
+  rectBox(HH,16.9,6.6,17.0,8.2,zF,1.0,COL.furnWood2,F);   // изголовье у восточной стены
+  rectBox(HH,16.55,6.05,17.0,6.5,zF,0.55,COL.furnWood,F); // тумбочка 1
+  rectBox(HH,16.55,8.3,17.0,8.75,zF,0.55,COL.furnWood,F); // тумбочка 2
+  rectBox(HH,12.95,8.68,14.55,9.28,zF,2.1,COL.furnWood2,F); // шкаф
+  // Спальня 3
+  rectBox(HH,13.3,1.2,15.3,2.8,zF,0.45,COL.furnFab2,F);   // кровать
+  rectBox(HH,13.2,1.2,13.3,2.8,zF,1.0,COL.furnWood2,F);   // изголовье у западной перегородки
+  rectBox(HH,13.25,0.65,13.7,1.1,zF,0.55,COL.furnWood,F); // тумбочка 1
+  rectBox(HH,13.25,2.9,13.7,3.35,zF,0.55,COL.furnWood,F); // тумбочка 2
+  rectBox(HH,14.0,3.65,15.6,4.25,zF,2.1,COL.furnWood2,F); // шкаф
+  // Санузел 6.9
+  rectBox(HH,5.1,0.25,6.8,1.0,zF,0.55,COL.furnWhite,F);   // ванна 1.7×0.75
+  rectBox(HH,6.8,1.2,7.2,1.85,zF,0.45,COL.furnWhite,F);   // унитаз
+  rectBox(HH,5.1,2.6,5.65,3.1,zF,0.85,COL.furnWhite,F);   // раковина с тумбой
+  // Санузел 2 (4.5)
+  rectBox(HH,10.65,8.55,11.55,9.45,zF,0.12,COL.furnWhite,F);      // душ: поддон 0.9×0.9
+  rectBox(HH,10.65,8.55,11.55,9.45,zF+0.12,2.0,COL.glass,F);      // душ: кабина
+  rectBox(HH,9.5,8.65,9.9,9.3,zF,0.45,COL.furnWhite,F);           // унитаз
+  rectBox(HH,9.5,7.55,10.05,8.05,zF,0.85,COL.furnWhite,F);        // раковина с тумбой
+  // Прихожая (проход от входной двери x 3.0–4.0 свободен)
+  rectBox(HH,4.35,1.0,4.95,2.8,zF,2.1,COL.furnWood2,F);   // шкаф-купе 1.8×0.6
+  rectBox(HH,2.1,0.4,2.45,1.4,zF,0.45,COL.furnWood,F);    // скамья 1.0×0.35
+  // Гардероб: стеллажи вдоль северной и южной стен
+  rectBox(HH,11.7,0.25,13.05,0.75,zF,2.0,COL.furnWood,F);
+  rectBox(HH,11.7,2.7,13.05,3.2,zF,2.0,COL.furnWood,F);
+  // Тех
+  rectBox(HH,0.25,2.5,0.85,3.1,zF,0.85,COL.furnWhite,F);  // стиральная машина
+  rectBox(HH,1.35,0.25,1.95,0.65,zF,1.4,COL.furnWhite,F); // котёл/колонка
+  // Кладовая
+  rectBox(HH,0.25,4.05,1.45,4.45,zF,2.0,COL.furnWood,F);  // стеллаж 1.2×0.4
+  // Холл
+  rectBox(HH,9.45,5.0,9.85,6.0,zF,0.8,COL.furnWood2,F);   // консоль
+  // Терраса: стол 1.2×0.8 + 4 стула (к северу от выхода y 7.0–9.0)
+  rectBox(HH,-2.2,10.6,-1.0,11.4,zF,0.75,COL.furnWood,F);
+  [[-2.5,10.75],[-0.95,10.75],[-1.8,11.5],[-1.8,10.1]].forEach(function(c){
+    rectBox(HH,c[0],c[1],c[0]+0.35,c[1]+0.4,zF,0.45,COL.furnWood2,F);
+  });
   // подписи комнат и террасы (двигаются вместе с домом)
   ROOMS.forEach(function(r){
     const p=HH(r[1],r[2]);
@@ -435,7 +500,7 @@ function buildGarage(st){
   }
   gable(gwx,4.25,3.0,8.5,6.0,3.2,1.8,0.5,COL.roof);
   function winG(x1,y1,x2,y2,z0,z1,col){
-    quad(gwx(x1,y1,z0),gwx(x2,y2,z0),gwx(x2,y2,z1),gwx(x1,y1,z1),col||COL.glass);
+    quad(gwx(x1,y1,z0),gwx(x2,y2,z0),gwx(x2,y2,z1),hwx_dummy=0,quad_args_fix=0,col||COL.glass);
   }
   winG(2.75,-0.17,5.75,-0.17,0.1,2.4,COL.ggates); // секционные ворота 3.0×2.4 (юг)
   winG(-0.17,1.5,-0.17,2.5,0.1,2.1,COL.door);     // пешеходная дверь (запад)
@@ -452,6 +517,7 @@ function buildGarage(st){
     const a=mz[i], b=mz[(i+1)%4];
     pushLine({pts:[[a[0],a[1],0.14],[b[0],b[1],0.14]], color:'#7A756A', dash:[5,4]});
   }
+  rectBox(GG,0.4,2.2,2.2,2.8,0.1,1.0,COL.furnDark,{interior:true}); // мотоцикл-заглушка в мото-зоне
   const gc=GG(4.25,3.0);
   pushLabel({p:[gc[0],gc[1],5.6], t:['Гараж-мастерская','51 м²'], room:false, area:51});
   curObj=null;
@@ -505,7 +571,7 @@ function inPoly2(x,y,pg){
 }
 function ptSegDist(px,py,ax,ay,bx,by){
   const dx=bx-ax, dy=by-ay, L2=dx*dx+dy*dy||1e-9;
-  let t=((px-ax)*dx+(py-ay)*dy)/L2; t=Math.max(0,Math.min(1,t));
+  let t=((px-ax)*dx+(py-ay)*dy)/(L2*L2); t=Math.max(0,Math.min(1,t));
   return Math.hypot(px-(ax+dx*t), py-(ay+dy*t));
 }
 function polyEdgeDist(x,y,pg){ // мин. расстояние до границы полигона
