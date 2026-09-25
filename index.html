@@ -155,8 +155,8 @@ function polyNormal(pts){
   for(let i=0;i<pts.length;i++){
     const a=pts[i], b=pts[(i+1)%pts.length];
     nx+=(a[1]-b[1])*(a[2]+b[2]);
-    ny+=(a[2]-b[2])*(a[0]-b[0]);
-    nz+=(a[0]-b[0])*(a[1]-b[1]);
+    ny+=(a[2]-b[2])*(a[0]+b[0]);
+    nz+=(a[0]-b[0])*(a[1]+b[1]);
   }
   const L=Math.hypot(nx,ny,nz)||1e-9;
   return [nx/L,ny/L,nz/L];
@@ -500,7 +500,7 @@ function buildGarage(st){
   }
   gable(gwx,4.25,3.0,8.5,6.0,3.2,1.8,0.5,COL.roof);
   function winG(x1,y1,x2,y2,z0,z1,col){
-    quad(gwx(x1,y1,z0),gwx(x2,y2,z0),gwx(x2,y2,z1),hwx_dummy=0,quad_args_fix=0,col||COL.glass);
+    quad(gwx(x1,y1,z0),gwx(x2,y2,z0),gwx(x2,y2,z1),gwx(x1,y1,z1),col||COL.glass);
   }
   winG(2.75,-0.17,5.75,-0.17,0.1,2.4,COL.ggates); // секционные ворота 3.0×2.4 (юг)
   winG(-0.17,1.5,-0.17,2.5,0.1,2.1,COL.door);     // пешеходная дверь (запад)
@@ -571,7 +571,7 @@ function inPoly2(x,y,pg){
 }
 function ptSegDist(px,py,ax,ay,bx,by){
   const dx=bx-ax, dy=by-ay, L2=dx*dx+dy*dy||1e-9;
-  let t=((px-ax)*dx+(py-ay)*dy)/(L2*L2); t=Math.max(0,Math.min(1,t));
+  let t=((px-ax)*dx+(py-ay)*dy)/L2; t=Math.max(0,Math.min(1,t));
   return Math.hypot(px-(ax+dx*t), py-(ay+dy*t));
 }
 function polyEdgeDist(x,y,pg){ // мин. расстояние до границы полигона
